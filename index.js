@@ -84,24 +84,25 @@ Select.prototype.render = function () {
   var me = this;
 
   me.options.forEach(function(option, position){
-    
-    var prefix = ( position === me.pointerPosition ) ? me.config.pointer 
+
+    var prefix = ( position === me.pointerPosition ) ? me.config.pointer
                                                      : me.config.pointer.replace(/[(\w\W)(\ )]/g, ' ')
 
-    var checked = me.config.multiSelect ? 
-                  me.optionsSelected.indexOf(option) !== -1 ? me.config.checked[ me.config.checkedColor ] 
-                                                            : me.config.unchecked[ me.config.checkedColor ] 
+    var checked = me.config.multiSelect ?
+                  me.optionsSelected.indexOf(option) !== -1 ? me.config.checked[ me.config.checkedColor ]
+                                                            : me.config.unchecked[ me.config.checkedColor ]
                   : '';
-    
+
     me.currentoption = prefix.trim() ? option : me.currentoption;
-    
-    console.log( prefix[ me.config.pointerColor ] + 
-                (me.config.prepend ? checked : '') + 
+
+    console.log( prefix[ me.config.pointerColor ] +
+                (me.config.prepend ? checked : '') +
                 (position === me.pointerPosition && me.config.inverse ? option.text[ 'inverse' ] : option.text) +
-                (me.config.prepend ? '' : checked) 
+                (me.config.prepend ? '' : checked)
     );
   });
   processOut.write(encode('[?25l'));
+  this.emit('rendered')
 };
 
 /**
@@ -136,7 +137,7 @@ Select.prototype.next = function () {
 };
 
 /**
- * Change pointerPosition 
+ * Change pointerPosition
  *
  * @api private
  */
@@ -146,7 +147,7 @@ Select.prototype.prev = function () {
 };
 
 /**
- * Check the option 
+ * Check the option
  *
  * @api private
  */
@@ -160,6 +161,7 @@ Select.prototype.checkoption = function () {
       this.optionsSelected.splice(0, 1, this.options[this.pointerPosition]);
     }
     this.changeSelected();
+    this.emit('change', this.options[this.pointerPosition])
   }
 };
 
@@ -174,7 +176,8 @@ Select.prototype.uncheckoption = function () {
   if ( optionPosition !== -1 ) {
     this.optionsSelected.splice(optionPosition, 1);
     this.changeSelected();
-  } 
+    this.emit('change', Object.assign({}, deleted[0], { unchecked: true }))
+  }
 };
 
 /**
@@ -185,7 +188,7 @@ Select.prototype.uncheckoption = function () {
  */
 Select.prototype.option = function (text, value) {
   value = value !== undefined ? value : text;
-  
+
   this.options.push({ text: text, value: value });
   this.optionsLength = this.options.length;
   return this;
@@ -247,7 +250,7 @@ Select.prototype.keypress = function (ch, key) {
 
   switch(key.name) {
   case 'up':
-    this.prev();       
+    this.prev();
     break;
   case 'down':
     this.next();
